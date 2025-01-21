@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "465969396494",
+    "project_id": "giftapp-75fc9",
+    "storage_bucket": "giftapp-75fc9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465969396494:android:fefc4df923da683695355f",
+        "android_client_info": {
+          "package_name": "com.example.giftapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3rpreUOJLlyT2NLFD3YUKLjFoHiHG4d8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
