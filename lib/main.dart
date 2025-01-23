@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:giftapp/auth/loginscreen.dart';
+import 'package:giftapp/shops/menu_list/add_item.dart';
+import 'package:giftapp/shops/menu_list/my_ads.dart';
 
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
@@ -21,12 +23,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+
       ),
+      initialRoute: '/',
+      routes: {
+        '/my-products': (context) => MyAdsScreen(),
+        '/add-item': (context) => AddItemScreen(),
+        // Add other routes here
+      },
       home: LoginScreen(), // Display the RegisterScreen directly
     );
 

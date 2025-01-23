@@ -50,10 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
               context,
               MaterialPageRoute(builder: (context) => Shopscreen()),
             );
-          } else {
+          } else if(role == 'user'){
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const BottomNavBarScreen()),
+              MaterialPageRoute(builder: (context) =>  const BottomNavBarScreen()),
             );
           }
         } else {
