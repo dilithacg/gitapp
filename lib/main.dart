@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/my-products': (context) => MyAdsScreen(),
+        '/my-products': (context) => PostScreen(),
         '/add-item': (context) => AddItemScreen(),
         // Add other routes here
       },
