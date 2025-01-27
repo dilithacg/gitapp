@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:giftapp/const/colors.dart';
 
 import '../const/buttons.dart';
+import '../screens/create_order/buy_now.dart';
 import 'itemlist.dart';
+
+
 
 class ItemDetail extends StatelessWidget {
   final Item item;
@@ -15,7 +18,7 @@ class ItemDetail extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           item.title,
-          style: const TextStyle(fontWeight: FontWeight.normal , color: Colors.white),
+          style: const TextStyle(fontWeight: FontWeight.normal, color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: AppColors.primaryColor,
@@ -25,7 +28,6 @@ class ItemDetail extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-
               child: Image.network(
                 item.imageUrl,
                 width: double.infinity,
@@ -47,7 +49,7 @@ class ItemDetail extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '₹${item.price}',
+                    'Rs ${item.price}',
                     style: TextStyle(
                       fontSize: 22,
                       color: AppColors.primaryColor,
@@ -66,10 +68,42 @@ class ItemDetail extends StatelessWidget {
                 ],
               ),
             ),
-            AddToCartButton(
-              onPressed: () {
-                // Action when button is pressed
-              },
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BuyNowScreen(
+                        shopID: item.shopID,
+                        price: item.price,
+                        itemID: item.id,
+                        title: item.title,
+                        itemImage: item.imageUrl,
+
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Buy Now',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

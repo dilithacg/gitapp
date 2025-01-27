@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
           // SliderPage widget
           Container(
             padding: EdgeInsets.only(top: 25),
-            height: 310.0, // Set a fixed height for the slider
+            height: 301.0, // Set a fixed height for the slider
             child: SliderPage(),
           ),
           // ItemList widget

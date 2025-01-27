@@ -51,7 +51,7 @@ class _PostScreenState extends State<PostScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Items'),
+        title: Text('My ads'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('items')
@@ -84,7 +84,7 @@ class _PostScreenState extends State<PostScreen> {
                   leading: Image.network(imageUrl),
                   title: Text(title),
                   subtitle: Text(description),
-                  trailing: Text('\$${price.toString()}'),
+                  trailing: Text('\Rs ${price.toString()}'),
                 ),
               );
             },

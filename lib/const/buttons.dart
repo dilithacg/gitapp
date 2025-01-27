@@ -21,7 +21,7 @@ class AddToCartButton extends StatelessWidget {
         ),
         child: const Center(
           child: Text(
-            'Add to Cart',
+            'Buy Now',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:giftapp/const/colors.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart'; // Import the smooth_page_indicator package
 
 class SliderPage extends StatefulWidget {
@@ -67,8 +68,8 @@ class _SliderPageState extends State<SliderPage> {
                     options: CarouselOptions(
                       autoPlay: true,
                       enlargeCenterPage: true,
-                      aspectRatio: 16 / 9,
-                      viewportFraction: 1.0, // Ensure full width usage
+                      aspectRatio: 18 / 9,
+                      viewportFraction: 0.9, // Ensure full width usage
                       enableInfiniteScroll: true,
                       scrollPhysics: ClampingScrollPhysics(),
                       onPageChanged: (index, reason) {
@@ -90,7 +91,7 @@ class _SliderPageState extends State<SliderPage> {
                       dotHeight: 10.0,
                       spacing: 16.0,
                       dotColor: Colors.grey,
-                      activeDotColor: Colors.blueAccent,
+                      activeDotColor: AppColors.thirdColor,
                     ),
                   ),
                 ),
