@@ -26,6 +26,7 @@ android {
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
 
 
@@ -45,4 +46,8 @@ flutter {
 
 dependencies{
     implementation platform('com.google.firebase:firebase-bom:33.8.0')
+
+    implementation 'com.google.android.gms:play-services-maps:18.0.0' // Google Maps
+
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
