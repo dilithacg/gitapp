@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:giftapp/screens/cartscreen.dart';
 import 'package:giftapp/screens/homescreen.dart';
+import 'package:giftapp/screens/profilescreen.dart';
 import 'package:giftapp/screens/searchscreen.dart';
 
 class BottomNavBarScreen extends StatefulWidget {
@@ -16,8 +17,8 @@ class _BottomNavBarScreenState extends State<BottomNavBarScreen> {
   static List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
      SearchScreen(),
+    ProfileScreen(),
 
-    ProfileScreen()
   ];
 
   void _onItemTapped(int index) {
@@ -56,13 +57,6 @@ class _BottomNavBarScreenState extends State<BottomNavBarScreen> {
 
 
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Profile Screen', style: TextStyle(fontSize: 35)));
-  }
-}
 
 
