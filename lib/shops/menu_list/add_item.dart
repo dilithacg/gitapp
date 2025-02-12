@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,6 +66,37 @@ class _AddItemScreenState extends State<AddItemScreen> {
       }
 
       try {
+        // Get the current logged user's ID
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('User not logged in')),
+          );
+          return;
+        }
+
+        // Fetch the user's details from Firestore to get the shop ID
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .get();
+
+        if (!userDoc.exists) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('User data not found')),
+          );
+          return;
+        }
+
+        // Get the shop ID from the user's document
+        String? shopId = userDoc['shopId'];
+        if (shopId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Shop ID not found')),
+          );
+          return;
+        }
+
         // Compress the image before uploading
         File compressedImage = await compressImage(image);
 
@@ -72,12 +104,13 @@ class _AddItemScreenState extends State<AddItemScreen> {
         String? imageUrl = await uploadImageToExternalService(compressedImage);
         if (imageUrl == null) return;
 
-        // Save item details to Firestore
+        // Save item details to Firestore, including the shop ID
         await FirebaseFirestore.instance.collection('items').add({
           'title': title,
           'description': description,
           'price': double.parse(price),
           'imageUrl': imageUrl,
+          'shopId': shopId, // Add the shop ID here
           'timestamp': FieldValue.serverTimestamp(), // Add a timestamp
         });
 
@@ -97,6 +130,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

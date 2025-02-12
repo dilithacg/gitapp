@@ -76,4 +76,5 @@ flutter:
   assets:
     - assets/images/login.png
     - assets/images/shoploc.png
+    - assets/images/profile.png
 

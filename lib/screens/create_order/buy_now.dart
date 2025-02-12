@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:giftapp/const/colors.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 import 'mapscreen.dart';
 
 class BuyNowScreen extends StatefulWidget {
@@ -30,12 +31,13 @@ class BuyNowScreen extends StatefulWidget {
 class _BuyNowScreenState extends State<BuyNowScreen> {
   LatLng? _selectedLocation;
   LatLng? _shopLocation;
+  double? _deliveryFee;
+  double? _totalCost;
 
   Future<void> _requestLocationPermission() async {
     PermissionStatus permission = await Permission.location.request();
 
     if (permission.isDenied || permission.isPermanentlyDenied) {
-      // If permission is denied, request again or open app settings
       if (permission.isPermanentlyDenied) {
         openAppSettings();
       } else {
@@ -56,20 +58,23 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
     LatLng? pickedLocation = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MapScreen(initialLocation: initialLocation, shopLocation: _shopLocation),
+        builder: (context) =>
+            MapScreen(initialLocation: initialLocation, shopLocation: _shopLocation),
       ),
     );
 
     if (pickedLocation != null) {
       setState(() {
         _selectedLocation = pickedLocation;
+        _calculateDeliveryFee();
       });
     }
   }
 
   Future<void> _fetchShopLocation() async {
     try {
-      DocumentSnapshot shopSnapshot = await FirebaseFirestore.instance.collection('shops').doc(widget.shopID).get();
+      DocumentSnapshot shopSnapshot =
+      await FirebaseFirestore.instance.collection('shops').doc(widget.shopID).get();
 
       if (shopSnapshot.exists) {
         final shopData = shopSnapshot.data() as Map<String, dynamic>;
@@ -84,6 +89,33 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to fetch shop location: $error')),
       );
+    }
+  }
+
+  void _calculateDeliveryFee() {
+    if (_shopLocation != null && _selectedLocation != null) {
+      double distanceInKm = Geolocator.distanceBetween(
+        _shopLocation!.latitude,
+        _shopLocation!.longitude,
+        _selectedLocation!.latitude,
+        _selectedLocation!.longitude,
+      ) /
+          1000;
+
+      double baseFee = 250; // First 10 km fee
+      double additionalFee = 0;
+
+      // Calculate additional fee for distance beyond 10 km
+      if (distanceInKm > 10) {
+        additionalFee = (distanceInKm - 10) * 20;
+      }
+
+      double totalFee = baseFee + additionalFee;
+
+      setState(() {
+        _deliveryFee = totalFee;
+        _totalCost = widget.price + totalFee;
+      });
     }
   }
 
@@ -118,6 +150,10 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
           'latitude': _selectedLocation!.latitude,
           'longitude': _selectedLocation!.longitude,
         },
+        'deliveryFee': _deliveryFee,
+        'totalCost': _totalCost,
+        'shopApprove': false,
+        'riderApprove': false,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -187,6 +223,22 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
                         color: Colors.grey,
                       ),
                     ),
+                    if (_deliveryFee != null)
+                      Text(
+                        'Delivery Fee: Rs ${_deliveryFee!.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    if (_totalCost != null)
+                      Text(
+                        'Total: Rs ${_totalCost!.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.green,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -229,86 +281,6 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class MapScreen extends StatefulWidget {
-  final LatLng initialLocation;
-  final LatLng? shopLocation;
-
-  const MapScreen({
-    Key? key,
-    required this.initialLocation,
-    this.shopLocation,
-  }) : super(key: key);
-
-  @override
-  _MapScreenState createState() => _MapScreenState();
-}
-
-class _MapScreenState extends State<MapScreen> {
-  late GoogleMapController _controller;
-  LatLng? _selectedLocation;
-
-  void _onMapCreated(GoogleMapController controller) {
-    _controller = controller;
-    _controller.animateCamera(
-      CameraUpdate.newLatLngZoom(widget.initialLocation, 14),
-    );
-  }
-
-  void _onTap(LatLng location) {
-    setState(() {
-      _selectedLocation = location;
-    });
-  }
-
-  void _confirmSelection() {
-    if (_selectedLocation != null) {
-      Navigator.pop(context, _selectedLocation);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a location')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Select Location')),
-      body: Column(
-        children: [
-          Expanded(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: widget.initialLocation,
-                zoom: 14,
-              ),
-              onMapCreated: _onMapCreated,
-              onTap: _onTap,
-              markers: {
-                if (widget.shopLocation != null)
-                  Marker(
-                    markerId: const MarkerId('shopLocation'),
-                    position: widget.shopLocation!,
-                    infoWindow: const InfoWindow(title: 'Shop Location'),
-                  ),
-                if (_selectedLocation != null)
-                  Marker(
-                    markerId: const MarkerId('selectedLocation'),
-                    position: _selectedLocation!,
-                  ),
-              },
-            ),
-          ),
-          ElevatedButton(
-            onPressed: _confirmSelection,
-            child: const Text('Confirm Location'),
-          ),
-        ],
       ),
     );
   }

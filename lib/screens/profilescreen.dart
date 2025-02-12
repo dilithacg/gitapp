@@ -1,12 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:giftapp/screens/userprofile/my_orders.dart';
 import 'package:giftapp/screens/userprofile/update_profile.dart';
 
+import '../auth/loginscreen.dart';
 
-import '../auth/loginscreen.dart'; // Replace with your actual login screen
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({Key? key}) : super(key: key);
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String? username;
+  String? email;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final docSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (docSnapshot.exists) {
+          final data = docSnapshot.data();
+          setState(() {
+            username = data?['name'] ?? 'Unknown User';
+            email = data?['email'] ?? 'No email found';
+          });
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load user data: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,20 +62,23 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage('assets/profile.jpg'), // Replace with actual image
+              backgroundImage: AssetImage('assets/images/profile.png'),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'John Doe',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              username ?? 'Loading...',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const Text(
-              'johndoe@example.com',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              email ?? 'Loading...',
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             _buildButton(context, 'My Orders', Icons.shopping_bag, () {
-              // Navigate to My Orders screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MyOrdersScreen()),
+              );
             }),
             _buildButton(context, 'History', Icons.history, () {
               // Navigate to History screen
@@ -46,9 +89,9 @@ class ProfileScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => UpdateProfileScreen()),
               );
             }),
-            const Spacer(), // Pushes the logout button to the middle-bottom
+            const Spacer(),
             _buildLogoutButton(context),
-            const SizedBox(height: 20), // Add spacing from bottom
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -63,7 +106,7 @@ class ProfileScreen extends StatelessWidget {
         icon: Icon(icon),
         label: Text(title),
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50), // Full-width button
+          minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -77,10 +120,9 @@ class ProfileScreen extends StatelessWidget {
       onPressed: () async {
         try {
           await FirebaseAuth.instance.signOut();
-          // Navigate to login screen after logout
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => LoginScreen()), // Replace with your actual login screen
+            MaterialPageRoute(builder: (context) => LoginScreen()),
           );
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +134,7 @@ class ProfileScreen extends StatelessWidget {
       label: const Text('Logout', style: TextStyle(color: Colors.white)),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.red,
-        minimumSize: const Size(double.infinity, 50), // Full-width button
+        minimumSize: const Size(double.infinity, 50),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),

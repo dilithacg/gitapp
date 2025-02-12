@@ -30,7 +30,7 @@ class Item {
       description: data['description'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       price: (data['price'] ?? 0.0).toDouble(),
-      shopID: data['shopID'] ?? '',
+      shopID: data['shopId'] ?? '',
       timestamp: data['timestamp'] ?? Timestamp.now(),
       title: data['title'] ?? '',
     );

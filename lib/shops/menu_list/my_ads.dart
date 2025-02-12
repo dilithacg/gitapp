@@ -10,60 +10,78 @@ class PostScreen extends StatefulWidget {
 class _PostScreenState extends State<PostScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  String? _userShopID;
+  String? _userShopId;
 
   @override
   void initState() {
     super.initState();
-    _getUserShopID();
+    _getUserShopId();
   }
 
-  // Get the current user's shopID from the users collection
-  Future<void> _getUserShopID() async {
+  // Fetch shopId from users collection based on logged-in user ID
+  Future<void> _getUserShopId() async {
     try {
-      final currentUser = _auth.currentUser;
-      if (currentUser != null) {
-        final userSnapshot = await _firestore.collection('users')
-            .doc(currentUser.uid) // Assuming userID is the UID
-            .get();
-
-        if (userSnapshot.exists) {
+      final user = _auth.currentUser; // Get the currently logged-in user
+      if (user != null) {
+        final userDoc = await _firestore.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
           setState(() {
-            _userShopID = userSnapshot['shopID'];
+            _userShopId = userDoc.data()?['shopId']; // Extract shopId
           });
+        } else {
+          print('User document does not exist.');
         }
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      print('Error fetching shopId: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_userShopID == null) {
+    if (_userShopId == null) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Items'),
+          title: Text('My Ads'),
         ),
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Text('Loading your ads...'),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My ads'),
+        title: Text('My Ads'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('items')
-            .where('shopID', isEqualTo: _userShopID) // Filter items by shopID
+        stream: _firestore
+            .collection('items')
+            .where('shopId', isEqualTo: _userShopId) // Filter by shopId
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
 
+          if (snapshot.hasError) {
+            return Center(child: Text('An error occurred. Please try again.'));
+          }
+
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No items available.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'No items found.',
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
           }
 
           final items = snapshot.data!.docs;
@@ -78,13 +96,33 @@ class _PostScreenState extends State<PostScreen> {
               final imageUrl = item['imageUrl'];
 
               return Card(
-                margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                elevation: 4, // Add elevation for shadow
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: ListTile(
                   contentPadding: EdgeInsets.all(10),
-                  leading: Image.network(imageUrl),
-                  title: Text(title),
+                  leading: imageUrl != null && imageUrl.isNotEmpty
+                      ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      imageUrl,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                      : Icon(Icons.image, size: 50),
+                  title: Text(
+                    title,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text(description),
-                  trailing: Text('\Rs ${price.toString()}'),
+                  trailing: Text(
+                    'Rs ${price.toString()}',
+                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                  ),
                 ),
               );
             },
