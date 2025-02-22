@@ -182,7 +182,7 @@ class _ProfileScreenState extends State<Shopscreen> {
 
   final List<Map<String, String?>> menuList = [
     {'id': '1', 'name': 'My Ads', 'path': '/my-products'},
-    {'id': '2', 'name': 'Orders', 'path': null},
+    {'id': '2', 'name': 'Orders', 'path': '/orders'},
     {'id': '3', 'name': 'edit profile', 'path': null},
     {'id': '4', 'name': 'notification', 'path': null},
     {'id': '5', 'name': 'Add Item', 'path': '/add-item'},

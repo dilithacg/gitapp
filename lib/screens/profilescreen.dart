@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:giftapp/screens/userprofile/my_orders.dart';
+import 'package:giftapp/screens/userprofile/notifications.dart';
 import 'package:giftapp/screens/userprofile/update_profile.dart';
 
 import '../auth/loginscreen.dart';
@@ -80,10 +81,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 MaterialPageRoute(builder: (context) => MyOrdersScreen()),
               );
             }),
+            _buildButton(context, 'Notifications', Icons.notifications, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NotificationsScreen()),
+              );
+            }),
             _buildButton(context, 'History', Icons.history, () {
               // Navigate to History screen
             }),
-            _buildButton(context, 'Update Profile', Icons.edit, () {
+            _buildButton(context, 'Shop Register', Icons.edit, () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => UpdateProfileScreen()),
