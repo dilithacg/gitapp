@@ -32,6 +32,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
+        appBarTheme: AppBarTheme(
+          iconTheme: IconThemeData(color: Colors.white), // Change back arrow color
+        ),
       ),
       initialRoute: '/',
       routes: {

@@ -50,6 +50,7 @@ dependencies:
   dio: ^5.8.0+1
   flutter_polyline_points: ^2.1.0
   intl: ^0.20.2
+  location: 7.0.1
 
 
 dev_dependencies:

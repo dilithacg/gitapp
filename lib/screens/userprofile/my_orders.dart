@@ -10,7 +10,7 @@ class MyOrdersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders'),
+        title: Text('My Orders',style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: AppColors.primaryColor,
       ),

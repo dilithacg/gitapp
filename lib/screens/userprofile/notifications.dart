@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:giftapp/const/colors.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatelessWidget {
@@ -9,7 +10,8 @@ class NotificationsScreen extends StatelessWidget {
     String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? "";
 
     return Scaffold(
-      appBar: AppBar(title: Text("Notifications")),
+      appBar: AppBar(title: Text("Notifications",style: const TextStyle(color: Colors.white)),
+      backgroundColor: AppColors.primaryColor,),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection("notifications")

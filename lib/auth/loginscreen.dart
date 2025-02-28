@@ -7,6 +7,7 @@ import 'package:giftapp/const/colors.dart';
 
 
 import '../bottom_nav_bar_screen.dart';
+import '../rider/riderscreen.dart';
 import '../shops/shopscreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -54,6 +55,14 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) =>  const BottomNavBarScreen()),
+            );
+          }
+          else if (role == 'rider') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      const RiderHomeScreen()), // Navigate to RiderScreen
             );
           }
         } else {
