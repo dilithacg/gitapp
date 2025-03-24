@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:giftapp/const/colors.dart';
 
+
+import '../../rider/menu_list/map_page.dart';
+
+
 class MyOrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -10,7 +14,7 @@ class MyOrdersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders',style: const TextStyle(color: Colors.white)),
+        title: Text('My Orders', style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: AppColors.primaryColor,
       ),
@@ -41,19 +45,20 @@ class MyOrdersScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final order = orders[index];
               final title = order['title'] ?? 'No Title';
-              final price = order['price'] ?? 'No Price';
+              final totalCost = order['totalCost'] ?? 'No Price';
               final shopApprove = order['shopApprove'] ?? false;
               final riderApprove = order['riderApprove'] ?? false;
               final itemID = order['itemID'];
+              final acceptedRiderId = order['acceptedRiderId'];
+              final shopID = order['shopID'] ?? 'No Shop ID'; // Retrieve shopID
+              final location = order['location'] ?? 'No Location'; // Retrieve location
+
 
               final shopStatus = shopApprove ? 'Approved' : 'Pending';
               final riderStatus = riderApprove ? 'Approved' : 'Pending';
 
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('items')
-                    .doc(itemID)
-                    .get(),
+                future: FirebaseFirestore.instance.collection('items').doc(itemID).get(),
                 builder: (context, itemSnapshot) {
                   if (itemSnapshot.connectionState == ConnectionState.waiting) {
                     return Card(
@@ -80,71 +85,124 @@ class MyOrdersScreen extends StatelessWidget {
                   final itemData = itemSnapshot.data!;
                   final imageUrl = itemData['imageUrl'] ?? '';
 
-                  return Card(
-                    elevation: 4,
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: imageUrl.isNotEmpty
-                                ? Image.network(
-                              imageUrl,
-                              width: 70,
-                              height: 70,
-                              fit: BoxFit.cover,
-                            )
-                                : Icon(Icons.image, size: 70),
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Price: $price',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Row(
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: acceptedRiderId != null
+                        ? FirebaseFirestore.instance.collection('users').doc(acceptedRiderId).get()
+                        : null,
+                    builder: (context, riderSnapshot) {
+                      String riderName = "Not Assigned";
+                      String riderPhone = "N/A";
+                      String riderVehicle= "Not Assigned";
+                      if (riderSnapshot.hasData && riderSnapshot.data!.exists) {
+                        final riderData = riderSnapshot.data!;
+                        riderName = riderData['name'] ?? 'Unknown';
+                        riderPhone = riderData['phone'] ?? 'Unknown';
+                        riderVehicle = riderData['vehicleNo'] ?? 'Unknown';
+                      }
+
+                      return Card(
+                        elevation: 4,
+                        margin: EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: imageUrl.isNotEmpty
+                                    ? Image.network(
+                                  imageUrl,
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                )
+                                    : Icon(Icons.image, size: 70),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    StatusChip(
-                                      label: 'Shop: $shopStatus',
-                                      color: shopApprove
-                                          ? Colors.green
-                                          : Colors.orange,
+                                    Text(
+                                      title,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    SizedBox(width: 8),
-                                    StatusChip(
-                                      label: 'Rider: $riderStatus',
-                                      color: riderApprove
-                                          ? Colors.green
-                                          : Colors.orange,
+                                    SizedBox(height: 4),
+                                    Text(
+                                      "Total: Rs ${totalCost.toStringAsFixed(2)}",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[600],
+                                      ),
                                     ),
+                                    SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        StatusChip(
+                                          label: 'Shop: $shopStatus',
+                                          color: shopApprove
+                                              ? Colors.green
+                                              : Colors.orange,
+                                        ),
+                                        SizedBox(width: 8),
+                                        StatusChip(
+                                          label: 'Rider: $riderStatus',
+                                          color: riderApprove
+                                              ? Colors.green
+                                              : Colors.orange,
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 6),
+                                    Text(
+                                      'Rider: $riderName',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Phone: $riderPhone',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    Text(
+                                      'Vehicle No: $riderVehicle',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    SizedBox(height: 6),
+                                    if (shopApprove && riderApprove) // Show only when both are approved
+                                      ElevatedButton(
+                                        onPressed: () {
+
+
+
+
+                                        },
+                                        child: Text("View Map"),
+                                      ),
+
+
+
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
               );

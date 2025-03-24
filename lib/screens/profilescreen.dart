@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:giftapp/screens/userprofile/my_orders.dart';
 import 'package:giftapp/screens/userprofile/notifications.dart';
+import 'package:giftapp/screens/userprofile/order_history.dart';
 import 'package:giftapp/screens/userprofile/update_profile.dart';
 
 import '../auth/loginscreen.dart';
@@ -88,6 +89,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               );
             }),
             _buildButton(context, 'History', Icons.history, () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) =>     OrderHistoryScreen()),
+              );
               // Navigate to History screen
             }),
             _buildButton(context, 'Shop Register', Icons.edit, () {

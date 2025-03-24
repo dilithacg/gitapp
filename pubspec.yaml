@@ -51,7 +51,7 @@ dependencies:
   flutter_polyline_points: ^2.1.0
   intl: ^0.20.2
   location: 7.0.1
-
+  flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
   flutter_test:
