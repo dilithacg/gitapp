@@ -3,8 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:giftapp/const/colors.dart';
 
 class AddItemScreen extends StatefulWidget {
@@ -17,50 +15,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
-  File? _selectedImage;
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
-    }
-  }
-
-  // Compress the image before saving it
-  Future<File> compressImage(File image) async {
-    final result = await FlutterImageCompress.compressWithFile(
-      image.absolute.path,
-      minWidth: 800, // Minimum width for compression
-      minHeight: 800, // Minimum height for compression
-      quality: 80, // Quality level (0-100)
-    );
-
-    return File(image.absolute.path)..writeAsBytesSync(result!);
-  }
-
-  // This function would be used to upload the image to an external server
-  // and return the URL. Replace with actual API call if required.
-  Future<String?> uploadImageToExternalService(File image) async {
-    // You can implement uploading logic here, for now we'll simulate a URL.
-    // Example: Upload the image to a server and get the URL.
-    await Future.delayed(Duration(seconds: 2)); // Simulate network delay
-    return "https://example.com/your_image.jpg"; // Placeholder URL
-  }
+  final _imageUrlController = TextEditingController(); // Controller for image URL
 
   Future<void> _saveItem() async {
     if (_formKey.currentState!.validate()) {
       String title = _titleController.text;
       String description = _descriptionController.text;
       String price = _priceController.text;
-      File? image = _selectedImage;
+      String imageUrl = _imageUrlController.text;
 
-      if (image == null) {
+      if (imageUrl.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please select an image')),
+          SnackBar(content: Text('Please enter an image URL')),
         );
         return;
       }
@@ -97,13 +63,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
           return;
         }
 
-        // Compress the image before uploading
-        File compressedImage = await compressImage(image);
-
-        // Upload the image to an external service (replace with your actual implementation)
-        String? imageUrl = await uploadImageToExternalService(compressedImage);
-        if (imageUrl == null) return;
-
         // Save item details to Firestore, including the shop ID
         await FirebaseFirestore.instance.collection('items').add({
           'title': title,
@@ -116,9 +75,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
 
         // Clear form
         _formKey.currentState!.reset();
-        setState(() {
-          _selectedImage = null;
-        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Item added successfully!')),
@@ -130,7 +86,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -145,20 +100,19 @@ class _AddItemScreenState extends State<AddItemScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    height: 150,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: _selectedImage == null
-                        ? Icon(Icons.add_a_photo, size: 50, color: Colors.grey)
-                        : Image.file(_selectedImage!, fit: BoxFit.cover),
+                // Image URL input field
+                TextFormField(
+                  controller: _imageUrlController,
+                  decoration: InputDecoration(
+                    labelText: 'Image URL',
+                    border: OutlineInputBorder(),
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an image URL';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: 20),
                 TextFormField(
@@ -195,7 +149,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   decoration: InputDecoration(
                     labelText: 'Price',
                     border: OutlineInputBorder(),
-                    prefixText: '\$ ',
+                    prefixText: '\Rs ',
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -232,6 +186,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _imageUrlController.dispose();
     super.dispose();
   }
 }

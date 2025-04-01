@@ -51,6 +51,11 @@ class _ItemDetailState extends State<ItemDetail> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Item Detail', style: const TextStyle(color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: AppColors.primaryColor,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

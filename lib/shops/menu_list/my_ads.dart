@@ -91,7 +91,7 @@ class _PostScreenState extends State<PostScreen> {
             itemBuilder: (context, index) {
               final item = items[index];
               final title = item['title'];
-              final description = item['description'];
+
               final price = item['price'];
               final imageUrl = item['imageUrl'];
 
@@ -118,7 +118,7 @@ class _PostScreenState extends State<PostScreen> {
                     title,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(description),
+
                   trailing: Text(
                     'Rs ${price.toString()}',
                     style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),

@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 
+import '../../const/colors.dart';
+
 class OrderHistoryScreen extends StatefulWidget {
   @override
   _OrderHistoryScreenState createState() => _OrderHistoryScreenState();
@@ -144,7 +146,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Order History')),
+      appBar: AppBar(
+        title: Text('Order History', style: const TextStyle(color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: AppColors.primaryColor,
+      ),
       body: FutureBuilder<User?>(
         future: Future.value(_auth.currentUser),
         builder: (context, userSnapshot) {

@@ -16,10 +16,11 @@ class _ProfileScreenState extends State<Shopscreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   User? _user;
   String? username = "";
-  String? profilePic = ""; // Add user profile picture link if available
-  String? pdescription = "No description available"; // Add a description field in Firestore if needed
+  String? profilePic = "";
+  String? pdescription = "No description available";
   String? email = "";
   String? phone = "";
+  String? shopname = ""; // Add a variable for the shop name
 
   @override
   void initState() {
@@ -31,15 +32,26 @@ class _ProfileScreenState extends State<Shopscreen> {
   Future<void> _getUserData() async {
     _user = _auth.currentUser;
     if (_user != null) {
+      // Fetch user data
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(_user!.uid).get();
-
       if (userDoc.exists) {
         setState(() {
-          username = userDoc['username'];
+          username = userDoc['name'];
           email = userDoc['email'];
           phone = userDoc['phone'];
           profilePic = userDoc['profilePic'] ?? ''; // Update with Firestore field name
-          pdescription = userDoc['pdescription'] ?? 'No description available';
+        });
+      }
+
+      // Fetch shop data based on the current user's ID (ownerId)
+      QuerySnapshot shopDoc = await _firestore
+          .collection('shops')
+          .where('ownerId', isEqualTo: _user!.uid)
+          .get();
+
+      if (shopDoc.docs.isNotEmpty) {
+        setState(() {
+          shopname = shopDoc.docs.first['shopname'] ?? 'No shop name available';
         });
       }
     }
@@ -53,11 +65,10 @@ class _ProfileScreenState extends State<Shopscreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => LoginScreen(), // Ensure LoginScreen is the correct screen
+        builder: (context) => LoginScreen(),
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -81,15 +92,14 @@ class _ProfileScreenState extends State<Shopscreen> {
                   children: [
                     const SizedBox(height: 10),
                     Center(
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage: profilePic != null && profilePic!.isNotEmpty
-                            ? NetworkImage(profilePic!)
-                            : null,
-                        child: profilePic == null || profilePic!.isEmpty
-                            ? Icon(Icons.person, size: 50, color: Colors.white)
-                            : null,
+
+                      child: Image.network(
+                        'https://cdn-icons-png.flaticon.com/512/5457/5457134.png',
+                        height: 200.0,
+                        width: 200.0,
+                        fit: BoxFit.cover,
                       ),
+
                     ),
                     SizedBox(height: 20),
                     Text(
@@ -101,15 +111,12 @@ class _ProfileScreenState extends State<Shopscreen> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        pdescription ?? 'Loading...',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 17,
-                          color: Colors.grey[200],
-                        ),
+                    Text(
+                      shopname ?? 'Loading shop name...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -183,8 +190,6 @@ class _ProfileScreenState extends State<Shopscreen> {
   final List<Map<String, String?>> menuList = [
     {'id': '1', 'name': 'My Ads', 'path': '/my-products'},
     {'id': '2', 'name': 'Orders', 'path': '/orders'},
-    {'id': '3', 'name': 'edit profile', 'path': null},
-    {'id': '4', 'name': 'notification', 'path': null},
     {'id': '5', 'name': 'Add Item', 'path': '/add-item'},
   ];
 }

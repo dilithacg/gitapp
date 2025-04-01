@@ -178,7 +178,8 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Buy Now'),
+        title: Text('Buy Now', style: const TextStyle(color: Colors.white)),
+        centerTitle: true,
         backgroundColor: AppColors.primaryColor,
       ),
       body: SingleChildScrollView(
