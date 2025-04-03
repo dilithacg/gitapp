@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 import 'package:giftapp/auth/loginscreen.dart';
 import 'package:giftapp/shops/menu_list/add_item.dart';
@@ -7,17 +8,16 @@ import 'package:giftapp/shops/menu_list/my_ads.dart';
 import 'package:giftapp/shops/menu_list/orders.dart';
 import 'firebase_options.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Set Stripe Publishable Key before initializing Firebase
+  Stripe.publishableKey = "pk_test_51QsIuMG65mskaWEQN84vjGgIhXQEPKj6wVtRBSOnqnJsN9MBHt8CfI9rmUvNPGj6ALmM0M7BneJnwXC1wcYLJZ3p00gIWMyeFf";
 
   // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // Initialize Stripe
-
 
   runApp(const MyApp());
 }

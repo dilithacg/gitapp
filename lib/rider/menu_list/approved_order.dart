@@ -120,9 +120,9 @@ class _AcceptedOrdersPageState extends State<AcceptedOrdersPage> {
                     children: [
                       Text("User: ${orderData['userName']}"),
                       Text("Phone: ${orderData['userPhone']}"),
-                      Text("Total Cost: ${orderData['totalCost']}"),
+                      Text("Total Cost: \Rs${orderData['totalCost']!.toStringAsFixed(2)}"),
                       Text(
-                          "Delivery Fee: \$${orderData['deliveryFee']?.toString() ?? '0.0'}"), // Display delivery fee
+                          "Delivery Fee: \Rs${orderData['deliveryFee']!.toStringAsFixed(2)?.toString() ?? '0.0'}"), // Display delivery fee
                     ],
                   ),
                   trailing: ElevatedButton(

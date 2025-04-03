@@ -46,6 +46,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
           'longitude': _selectedLocation!.longitude,
         },
         'createdAt': FieldValue.serverTimestamp(),
+        'adminApprove': false,
       });
 
       await _firestore.collection('users').doc(userId).update({

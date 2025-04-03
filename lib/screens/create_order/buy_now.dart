@@ -7,6 +7,7 @@ import 'package:giftapp/const/colors.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'mapscreen.dart';
+import 'payment_screen.dart'; // Import the PaymentScreen
 
 class BuyNowScreen extends StatefulWidget {
   final String shopID;
@@ -160,7 +161,15 @@ class _BuyNowScreenState extends State<BuyNowScreen> {
         const SnackBar(content: Text('Order placed successfully!')),
       );
 
-      Navigator.pop(context);
+      // Navigate to the PaymentScreen after the order is placed
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentScreen(
+            totalCost: _totalCost ?? 0.0,  // Pass the total cost to the PaymentScreen
+          ),
+        ),
+      );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to place order: $error')),

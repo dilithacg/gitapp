@@ -98,6 +98,7 @@ class MyOrdersScreen extends StatelessWidget {
               final totalCost = orderData['totalCost'] ?? 'No Price';
               final shopApprove = orderData['shopApprove'] ?? false;
               final riderApprove = orderData['riderApprove'] ?? false;
+              final orderCompleted=orderData['orderCompleted'] ?? false;
               final itemID = orderData['itemID'];
               final acceptedRiderId = orderData['acceptedRiderId'];
               final shopID = orderData['shopID'] ?? 'No Shop ID';
@@ -230,6 +231,14 @@ class MyOrdersScreen extends StatelessWidget {
                                         color: Colors.grey[700],
                                       ),
                                     ),
+                                    Text(
+                                      orderCompleted ? 'Order Completed' : 'Not Completed',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+
                                     SizedBox(height: 6),
                                     if (shopApprove && riderApprove) // Show only when both are approved
                                       ElevatedButton(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:giftapp/const/colors.dart';
 import 'package:giftapp/rider/riderscreen.dart';
@@ -11,11 +12,11 @@ class MapPage extends StatefulWidget {
   final double shopLongitude;
   final double customerLatitude;
   final double customerLongitude;
-  final String userName; // Define userName parameter
-  final String userPhone; // Define userPhone parameter
+  final String userName;
+  final String userPhone;
   final String totalCost;
   final String orderId;
-  final String deliveryFee; // New parameter
+  final String deliveryFee;
 
   const MapPage({
     super.key,
@@ -76,7 +77,7 @@ class _MapPageState extends State<MapPage> {
     if (_currentPosition == null) return;
 
     LatLng startLocation =
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
+    LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
     LatLng endLocation = _toShop ? _shopLocation : _customerLocation;
 
     String url =
@@ -99,6 +100,7 @@ class _MapPageState extends State<MapPage> {
         });
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error fetching directions: $e');
     }
   }
@@ -151,23 +153,27 @@ class _MapPageState extends State<MapPage> {
   void _confirmDelivery() async {
     // Reference to Firestore
     CollectionReference orders =
-        FirebaseFirestore.instance.collection('orders');
+    FirebaseFirestore.instance.collection('orders');
 
     try {
       // Update the specific order document with orderId
       await orders.doc(widget.orderId).update({'orderCompleted': true});
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Order delivered successfully!')),
       );
 
       // Navigate to the RiderHomeScreen
       Navigator.pushReplacement(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(builder: (context) => RiderHomeScreen()),
       );
     } catch (e) {
+      // ignore: avoid_print
       print('Error updating order: $e');
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to confirm delivery: $e')),
       );
@@ -184,6 +190,28 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  void _updateRiderLocation(Position position) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        // ignore: avoid_print
+        print('No user logged in.');
+        return;
+      }
+      final String riderId = user.uid;
+      await FirebaseFirestore.instance.collection('rider').doc(riderId).set({
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'timestamp': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      // ignore: avoid_print
+      print('Rider location updated in Firestore.');
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error updating rider location: $e');
+    }
+  }
+
   void _listenToLocationChanges() {
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
@@ -196,6 +224,7 @@ class _MapPageState extends State<MapPage> {
         _getRoute(); // Fetch new route when location updates
       });
 
+      // Update the map camera position.
       if (_mapController != null && _currentPosition != null) {
         _mapController!.animateCamera(
           CameraUpdate.newLatLng(
@@ -203,6 +232,9 @@ class _MapPageState extends State<MapPage> {
           ),
         );
       }
+
+      // Save the updated location to Firestore.
+      _updateRiderLocation(position);
     });
   }
 
@@ -210,11 +242,11 @@ class _MapPageState extends State<MapPage> {
     if (_currentPosition == null) return 0.0;
     LatLng endLocation = _toShop ? _shopLocation : _customerLocation;
     return Geolocator.distanceBetween(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-          endLocation.latitude,
-          endLocation.longitude,
-        ) /
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      endLocation.latitude,
+      endLocation.longitude,
+    ) /
         1000; // Convert to kilometers
   }
 
@@ -227,13 +259,17 @@ class _MapPageState extends State<MapPage> {
     }
 
     LatLng startLocation =
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
+    LatLng(_currentPosition!.latitude, _currentPosition!.longitude);
     LatLng endLocation = _toShop ? _shopLocation : _customerLocation;
 
     return Scaffold(
-      appBar: AppBar(title: Text(_toShop ? 'To Shop' : 'To Customer',style: const TextStyle(color: Colors.white),
+      appBar: AppBar(
+        title: Text(
+          _toShop ? 'To Shop' : 'To Customer',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: AppColors.primaryColor,
       ),
-      backgroundColor: AppColors.primaryColor,),
       body: Column(
         children: [
           Expanded(
@@ -242,7 +278,7 @@ class _MapPageState extends State<MapPage> {
               children: [
                 GoogleMap(
                   initialCameraPosition:
-                      CameraPosition(target: startLocation, zoom: 15),
+                  CameraPosition(target: startLocation, zoom: 15),
                   markers: {
                     Marker(
                       markerId: const MarkerId('rider'),
@@ -254,7 +290,7 @@ class _MapPageState extends State<MapPage> {
                       position: endLocation,
                       infoWindow: InfoWindow(
                           title:
-                              _toShop ? 'Shop Location' : 'Customer Location'),
+                          _toShop ? 'Shop Location' : 'Customer Location'),
                     ),
                   },
                   polylines: _polylines,
@@ -314,11 +350,6 @@ class _MapPageState extends State<MapPage> {
                       'Total Cost: ${widget.totalCost}', // Display total cost
                       style: const TextStyle(fontSize: 12),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'Delivery Fee: ${widget.deliveryFee}', // Display delivery fee
-                      style: const TextStyle(fontSize: 12),
-                    ),
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
@@ -326,7 +357,8 @@ class _MapPageState extends State<MapPage> {
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryColor),
-                      child: const Text('Confirm Delivery',style: TextStyle(color: Colors.white)),
+                      child: const Text('Confirm Delivery',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ],
                   const SizedBox(height: 10),
@@ -339,10 +371,13 @@ class _MapPageState extends State<MapPage> {
                     ElevatedButton(
                       onPressed: _giftPickedUp ? null : _confirmGiftPickup,
                       style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              _giftPickedUp ? Colors.grey : AppColors.primaryColor),
+                          backgroundColor: _giftPickedUp
+                              ? Colors.grey
+                              : AppColors.primaryColor),
                       child: Text(
-                          _giftPickedUp ? 'Gift Picked Up ✅' : 'Pick Up Gift',style: TextStyle(color: Colors.white),),
+                        _giftPickedUp ? 'Gift Picked Up ✅' : 'Pick Up Gift',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ],

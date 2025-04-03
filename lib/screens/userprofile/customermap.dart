@@ -44,10 +44,8 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
     _fetchRiderDetails();
   }
 
-  // Fetch rider details and real-time location updates
   Future<void> _fetchRiderDetails() async {
     try {
-      // Fetch order details to get rider ID
       DocumentSnapshot orderSnapshot = await FirebaseFirestore.instance
           .collection('orders')
           .doc(widget.orderId)
@@ -57,7 +55,6 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
         var orderData = orderSnapshot.data() as Map<String, dynamic>;
         String acceptedRiderId = orderData['acceptedRiderId'];
 
-        // Fetch rider details
         FirebaseFirestore.instance
             .collection('users')
             .doc(acceptedRiderId)
@@ -74,7 +71,6 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
           }
         });
 
-        // Listen for real-time rider location updates
         FirebaseFirestore.instance
             .collection('rider')
             .doc(acceptedRiderId)
@@ -87,16 +83,13 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
                   LatLng(locationData['latitude'], locationData['longitude']);
             });
 
-            // Add the new rider location to the path
             if (riderLocation != null) {
               riderPath.add(riderLocation!);
             }
 
-            // Fetch route from rider location to customer
             _fetchRoute(riderLocation!,
                 LatLng(widget.customerLatitude, widget.customerLongitude));
 
-            // Move camera to new rider position
             _mapController.animateCamera(
               CameraUpdate.newLatLng(riderLocation!),
             );
@@ -111,7 +104,6 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
     }
   }
 
-  // Fetch the real road path using Google Maps Directions API
   Future<void> _fetchRoute(LatLng origin, LatLng destination) async {
     final url =
         'https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=$apiKey&mode=driving';
@@ -122,18 +114,15 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Check if routes are found
         if (data['routes'].isNotEmpty) {
           final route = data['routes'][0]['legs'][0]['steps'];
 
           List<LatLng> polylinePoints = [];
           for (var step in route) {
-            // Decode the polyline points for each step
             var polyline = step['polyline']['points'];
             polylinePoints.addAll(_decodePolyline(polyline));
           }
 
-          // Set the polyline with the new path
           setState(() {
             riderPath = polylinePoints;
           });
@@ -148,7 +137,6 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
     }
   }
 
-  // Decode polyline points from encoded string
   List<LatLng> _decodePolyline(String encoded) {
     List<LatLng> polylineCoordinates = [];
     int index = 0;
@@ -215,7 +203,7 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
       Polyline(
         polylineId: PolylineId("riderPath"),
         visible: true,
-        points: riderPath, // Continuous path along the road network
+        points: riderPath,
         color: Colors.blue,
         width: 5,
       ),
@@ -223,29 +211,27 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Map',style: const TextStyle(color: Colors.white)),
+        title: Text('Order Map', style: const TextStyle(color: Colors.white)),
         backgroundColor: AppColors.primaryColor,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target:
-                LatLng(widget.customerLatitude, widget.customerLongitude),
-                zoom: 12,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(widget.customerLatitude, widget.customerLongitude),
+                  zoom: 12,
+                ),
+                markers: markers,
+                polylines: polylines,
+                onMapCreated: (GoogleMapController controller) {
+                  _mapController = controller;
+                },
               ),
-              markers: markers,
-              polylines: polylines, // Display the polyline of rider's path
-              onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
-              },
             ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Padding(
+            Padding(
               padding: EdgeInsets.all(20),
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -310,8 +296,8 @@ class _CustomerMapPageState extends State<CustomerMapPage> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
