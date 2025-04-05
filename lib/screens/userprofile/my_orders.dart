@@ -3,11 +3,60 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:giftapp/const/colors.dart';
 
-
 import '../../rider/menu_list/map_page.dart';
-
+import 'customermap.dart';
 
 class MyOrdersScreen extends StatelessWidget {
+  Future<void> navigateToMap(Map<String, dynamic> orderData, String orderId,
+      BuildContext context) async {
+    String shopID = orderData['shopID'] ?? '';
+
+    double customerLat = (orderData['location']?['latitude'] ?? 0.0).toDouble();
+    double customerLng =
+    (orderData['location']?['longitude'] ?? 0.0).toDouble();
+
+    try {
+      DocumentSnapshot shopDoc =
+      await FirebaseFirestore.instance.collection('shops').doc(shopID).get();
+
+      if (shopDoc.exists) {
+        Map<String, dynamic>? shopData =
+        shopDoc.data() as Map<String, dynamic>?;
+
+        double shopLat =
+        (shopData?['splocation']?['latitude'] ?? 0.0).toDouble();
+        double shopLng =
+        (shopData?['splocation']?['longitude'] ?? 0.0).toDouble();
+
+        double deliveryFee = (orderData['deliveryFee'] ?? 0.0).toDouble();
+
+        debugPrint("Shop Location: Latitude: $shopLat, Longitude: $shopLng");
+        debugPrint(
+            "Customer Location: Latitude: $customerLat, Longitude: $customerLng");
+
+        Navigator.push(
+          // ignore: use_build_context_synchronously
+          context,
+          MaterialPageRoute(
+            builder: (context) => CustomerMapPage(
+              shopLatitude: shopLat,
+              shopLongitude: shopLng,
+              customerLatitude: customerLat,
+              customerLongitude: customerLng,
+              totalCost: orderData['totalCost']?.toString() ?? '0.0',
+              orderId: orderId,
+              deliveryFee: deliveryFee.toString(),
+            ),
+          ),
+        );
+      } else {
+        debugPrint("Error: Shop document does not exist.");
+      }
+    } catch (e) {
+      debugPrint("Error fetching shop location: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
@@ -44,15 +93,15 @@ class MyOrdersScreen extends StatelessWidget {
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
-              final title = order['title'] ?? 'No Title';
-              final totalCost = order['totalCost'] ?? 'No Price';
-              final shopApprove = order['shopApprove'] ?? false;
-              final riderApprove = order['riderApprove'] ?? false;
-              final itemID = order['itemID'];
-              final acceptedRiderId = order['acceptedRiderId'];
-              final shopID = order['shopID'] ?? 'No Shop ID'; // Retrieve shopID
-              final location = order['location'] ?? 'No Location'; // Retrieve location
-
+              final orderData = order.data() as Map<String, dynamic>; // Cast to Map<String, dynamic>
+              final title = orderData['title'] ?? 'No Title';
+              final totalCost = orderData['totalCost'] ?? 'No Price';
+              final shopApprove = orderData['shopApprove'] ?? false;
+              final riderApprove = orderData['riderApprove'] ?? false;
+              final itemID = orderData['itemID'];
+              final acceptedRiderId = orderData['acceptedRiderId'];
+              final shopID = orderData['shopID'] ?? 'No Shop ID';
+              final location = orderData['location'] ?? 'No Location';
 
               final shopStatus = shopApprove ? 'Approved' : 'Pending';
               final riderStatus = riderApprove ? 'Approved' : 'Pending';
@@ -92,7 +141,7 @@ class MyOrdersScreen extends StatelessWidget {
                     builder: (context, riderSnapshot) {
                       String riderName = "Not Assigned";
                       String riderPhone = "N/A";
-                      String riderVehicle= "Not Assigned";
+                      String riderVehicle = "Not Assigned";
                       if (riderSnapshot.hasData && riderSnapshot.data!.exists) {
                         final riderData = riderSnapshot.data!;
                         riderName = riderData['name'] ?? 'Unknown';
@@ -185,16 +234,10 @@ class MyOrdersScreen extends StatelessWidget {
                                     if (shopApprove && riderApprove) // Show only when both are approved
                                       ElevatedButton(
                                         onPressed: () {
-
-
-
-
+                                          navigateToMap(orderData, order.id, context);
                                         },
                                         child: Text("View Map"),
                                       ),
-
-
-
                                   ],
                                 ),
                               ),
